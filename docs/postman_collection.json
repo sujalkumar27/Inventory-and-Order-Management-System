@@ -1,0 +1,141 @@
+{
+  "info": {
+    "name": "Inventory & Order Management System",
+    "description": "REST API collection. Set {{base_url}} and run Auth > Login first to populate {{access_token}}.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:8000/api" },
+    { "key": "access_token", "value": "" },
+    { "key": "refresh_token", "value": "" }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{access_token}}", "type": "string" }]
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/auth/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"full_name\": \"Admin User\",\n  \"email\": \"admin@example.com\",\n  \"password\": \"password123\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "pm.collectionVariables.set('access_token', json.access_token);",
+                  "pm.collectionVariables.set('refresh_token', json.refresh_token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"password123\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Refresh",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/auth/refresh",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh_token\": \"{{refresh_token}}\"\n}"
+            }
+          }
+        },
+        { "name": "Me", "request": { "method": "GET", "url": "{{base_url}}/auth/me" } }
+      ]
+    },
+    {
+      "name": "Products",
+      "item": [
+        { "name": "List", "request": { "method": "GET", "url": "{{base_url}}/products?page=1&page_size=10&sort_by=name&order=asc" } },
+        {
+          "name": "Create",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/products",
+            "body": { "mode": "raw", "raw": "{\n  \"sku\": \"SKU-001\",\n  \"name\": \"Sample Product\",\n  \"description\": \"A demo product\",\n  \"price\": \"19.99\",\n  \"stock_quantity\": 100\n}" }
+          }
+        },
+        { "name": "Get", "request": { "method": "GET", "url": "{{base_url}}/products/:id" } },
+        {
+          "name": "Update",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/products/:id",
+            "body": { "mode": "raw", "raw": "{\n  \"price\": \"24.99\"\n}" }
+          }
+        },
+        { "name": "Delete", "request": { "method": "DELETE", "url": "{{base_url}}/products/:id" } }
+      ]
+    },
+    {
+      "name": "Customers",
+      "item": [
+        { "name": "List", "request": { "method": "GET", "url": "{{base_url}}/customers?page=1&page_size=10" } },
+        {
+          "name": "Create",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/customers",
+            "body": { "mode": "raw", "raw": "{\n  \"first_name\": \"John\",\n  \"last_name\": \"Doe\",\n  \"email\": \"john@example.com\",\n  \"phone\": \"+1-555-0100\",\n  \"address\": \"123 Main St\"\n}" }
+          }
+        },
+        { "name": "Get", "request": { "method": "GET", "url": "{{base_url}}/customers/:id" } },
+        { "name": "Update", "request": { "method": "PUT", "header": [{ "key": "Content-Type", "value": "application/json" }], "url": "{{base_url}}/customers/:id", "body": { "mode": "raw", "raw": "{\n  \"phone\": \"+1-555-0199\"\n}" } } },
+        { "name": "Delete", "request": { "method": "DELETE", "url": "{{base_url}}/customers/:id" } }
+      ]
+    },
+    {
+      "name": "Orders",
+      "item": [
+        { "name": "List", "request": { "method": "GET", "url": "{{base_url}}/orders?page=1&page_size=10" } },
+        {
+          "name": "Create",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/orders",
+            "body": { "mode": "raw", "raw": "{\n  \"customer_id\": \"<customer-uuid>\",\n  \"items\": [\n    { \"product_id\": \"<product-uuid>\", \"quantity\": 2 }\n  ]\n}" }
+          }
+        },
+        { "name": "Get", "request": { "method": "GET", "url": "{{base_url}}/orders/:id" } },
+        { "name": "Update Status", "request": { "method": "PUT", "header": [{ "key": "Content-Type", "value": "application/json" }], "url": "{{base_url}}/orders/:id", "body": { "mode": "raw", "raw": "{\n  \"status\": \"completed\"\n}" } } },
+        { "name": "Delete", "request": { "method": "DELETE", "url": "{{base_url}}/orders/:id" } }
+      ]
+    },
+    {
+      "name": "Dashboard",
+      "item": [
+        { "name": "Stats", "request": { "method": "GET", "url": "{{base_url}}/dashboard/stats" } },
+        { "name": "Export Products CSV", "request": { "method": "GET", "url": "{{base_url}}/dashboard/products/export" } }
+      ]
+    }
+  ]
+}
