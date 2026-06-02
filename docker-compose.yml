@@ -38,9 +38,7 @@ services:
       FIRST_ADMIN_NAME: ${FIRST_ADMIN_NAME:-Administrator}
     ports:
       - "8000:8000"
-    command: >
-      sh -c "alembic upgrade head &&
-             uvicorn app.main:app --host 0.0.0.0 --port 8000"
+    # The image entrypoint already runs `alembic upgrade head` then starts uvicorn.
 
   frontend:
     build:

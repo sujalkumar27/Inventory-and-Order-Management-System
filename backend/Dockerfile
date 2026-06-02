@@ -22,6 +22,7 @@ EXPOSE 8000
 
 # Container-level health check hitting the API health endpoint.
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
-    CMD python -c "import urllib.request,sys; sys.exit(0) if urllib.request.urlopen('http://localhost:8000/health').status==200 else sys.exit(1)"
+    CMD python -c "import os,urllib.request,sys; p=os.getenv('PORT','8000'); sys.exit(0) if urllib.request.urlopen(f'http://localhost:{p}/health').status==200 else sys.exit(1)"
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Runs `alembic upgrade head` then starts the server (binds to $PORT if set).
+CMD ["sh", "entrypoint.sh"]
