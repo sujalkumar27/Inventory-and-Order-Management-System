@@ -23,6 +23,8 @@ class User(Base, TimestampMixin, SoftDeleteMixin):
     email: Mapped[str] = mapped_column(String(255), unique=True, index=True, nullable=False)
     hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
     role: Mapped[UserRole] = mapped_column(
-        SAEnum(UserRole, name="user_role"), default=UserRole.USER, nullable=False
+        SAEnum(UserRole, name="user_role", values_callable=lambda e: [m.value for m in e]),
+        default=UserRole.USER,
+        nullable=False,
     )
     is_active: Mapped[bool] = mapped_column(default=True, nullable=False)

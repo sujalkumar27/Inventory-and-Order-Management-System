@@ -31,7 +31,9 @@ class InventoryHistory(Base):
     previous_quantity: Mapped[int] = mapped_column(nullable=False)
     new_quantity: Mapped[int] = mapped_column(nullable=False)
     reason: Mapped[InventoryChangeReason] = mapped_column(
-        SAEnum(InventoryChangeReason, name="inventory_change_reason"), nullable=False
+        SAEnum(InventoryChangeReason, name="inventory_change_reason",
+               values_callable=lambda e: [m.value for m in e]),
+        nullable=False,
     )
     reference_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), nullable=True

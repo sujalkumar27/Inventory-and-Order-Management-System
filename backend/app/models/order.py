@@ -31,7 +31,8 @@ class Order(Base, TimestampMixin, SoftDeleteMixin):
     )
     total_amount: Mapped[Decimal] = mapped_column(Numeric(14, 2), nullable=False, default=0)
     status: Mapped[OrderStatus] = mapped_column(
-        SAEnum(OrderStatus, name="order_status"),
+        SAEnum(OrderStatus, name="order_status",
+               values_callable=lambda e: [m.value for m in e]),
         default=OrderStatus.PENDING,
         nullable=False,
     )
