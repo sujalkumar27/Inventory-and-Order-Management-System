@@ -1,8 +1,9 @@
+import json
 from functools import lru_cache
-from typing import List
+from typing import Annotated, List
 
 from pydantic import field_validator
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -30,7 +31,9 @@ class Settings(BaseSettings):
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
 
     # CORS
-    BACKEND_CORS_ORIGINS: List[str] = [
+    # NoDecode: skip pydantic-settings' eager JSON parse so assemble_cors below
+    # can accept plain URLs, comma-separated lists, or JSON arrays without crashing.
+    BACKEND_CORS_ORIGINS: Annotated[List[str], NoDecode] = [
         "http://localhost:3000",
         "http://localhost:5173",
     ]
@@ -43,7 +46,13 @@ class Settings(BaseSettings):
     @field_validator("BACKEND_CORS_ORIGINS", mode="before")
     @classmethod
     def assemble_cors(cls, v):
-        if isinstance(v, str) and not v.startswith("["):
+        """Accept a JSON array, a comma-separated list, a single URL, or empty."""
+        if isinstance(v, str):
+            v = v.strip()
+            if not v:
+                return []
+            if v.startswith("["):
+                return json.loads(v)
             return [i.strip() for i in v.split(",") if i.strip()]
         return v
 
