@@ -67,11 +67,15 @@ app = FastAPI(
     openapi_url="/openapi.json" if settings.docs_enabled else None,
 )
 
-if settings.BACKEND_CORS_ORIGINS:
+_origins = [str(o) for o in settings.BACKEND_CORS_ORIGINS]
+_allow_all = "*" in _origins
+if _origins:
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=[str(o) for o in settings.BACKEND_CORS_ORIGINS],
-        allow_credentials=True,
+        # "*" allows any origin. Browsers forbid credentials with "*", but auth
+        # here uses bearer tokens (not cookies), so credentials aren't required.
+        allow_origins=["*"] if _allow_all else _origins,
+        allow_credentials=not _allow_all,
         allow_methods=["*"],
         allow_headers=["*"],
     )
