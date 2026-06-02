@@ -1,9 +1,13 @@
 """Custom exceptions and global handlers producing a consistent error envelope."""
+import logging
+
 from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from sqlalchemy.exc import IntegrityError
 from starlette.exceptions import HTTPException as StarletteHTTPException
+
+logger = logging.getLogger("ioms")
 
 
 class AppException(Exception):
@@ -71,5 +75,7 @@ def register_exception_handlers(app: FastAPI) -> None:
         return _error("Database integrity error", status.HTTP_409_CONFLICT)
 
     @app.exception_handler(Exception)
-    async def _unhandled(_: Request, exc: Exception):
+    async def _unhandled(request: Request, exc: Exception):
+        # Log the full traceback server-side; never leak internals to the client.
+        logger.exception("Unhandled error on %s %s", request.method, request.url.path)
         return _error("Internal server error", status.HTTP_500_INTERNAL_SERVER_ERROR)

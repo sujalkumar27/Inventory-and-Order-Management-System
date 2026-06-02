@@ -22,12 +22,18 @@ A common production layout:
 
    | Key                           | Value                                   |
    | ----------------------------- | --------------------------------------- |
+   | `ENVIRONMENT`                 | `production`                            |
    | `DATABASE_URL`                | Neon psycopg URL                        |
-   | `SECRET_KEY`                  | long random string                      |
+   | `SECRET_KEY`                  | long random string (required, not a default) |
    | `ALGORITHM`                   | `HS256`                                 |
    | `ACCESS_TOKEN_EXPIRE_MINUTES` | `30`                                    |
    | `REFRESH_TOKEN_EXPIRE_DAYS`   | `7`                                     |
    | `BACKEND_CORS_ORIGINS`        | `["https://your-frontend.vercel.app"]`  |
+
+   > With `ENVIRONMENT=production` the API **refuses to start** if `SECRET_KEY` is
+   > missing or a known insecure default, and hides Swagger `/docs` (set
+   > `ENABLE_DOCS=true` to re-enable). Generate a secret with
+   > `python -c "import secrets; print(secrets.token_urlsafe(48))"`.
 
 5. Deploy. Public URL: `https://your-backend.onrender.com` (docs at `/docs`).
 

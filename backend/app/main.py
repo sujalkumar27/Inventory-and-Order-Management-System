@@ -1,3 +1,4 @@
+import logging
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -10,6 +11,22 @@ from app.db.session import SessionLocal
 from app.models.user import UserRole
 from app.schemas.auth import UserRegister
 from app.services import user_service
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("ioms")
+
+INSECURE_SECRETS = {"change-me-in-production", "change-me", "secret", ""}
+
+
+def _verify_production_config() -> None:
+    """Fail fast on insecure configuration when running in production."""
+    if not settings.is_production:
+        return
+    if settings.SECRET_KEY in INSECURE_SECRETS:
+        raise RuntimeError(
+            "SECRET_KEY is missing or set to an insecure default. "
+            "Set a strong, unique SECRET_KEY before deploying to production."
+        )
 
 
 def _bootstrap_admin() -> None:
@@ -33,10 +50,11 @@ def _bootstrap_admin() -> None:
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
+    _verify_production_config()
     try:
         _bootstrap_admin()
     except Exception:  # pragma: no cover - bootstrap is best effort
-        pass
+        logger.exception("Admin bootstrap failed")
     yield
 
 
@@ -44,8 +62,9 @@ app = FastAPI(
     title=settings.PROJECT_NAME,
     version="1.0.0",
     lifespan=lifespan,
-    docs_url="/docs",
-    openapi_url="/openapi.json",
+    docs_url="/docs" if settings.docs_enabled else None,
+    redoc_url="/redoc" if settings.docs_enabled else None,
+    openapi_url="/openapi.json" if settings.docs_enabled else None,
 )
 
 if settings.BACKEND_CORS_ORIGINS:

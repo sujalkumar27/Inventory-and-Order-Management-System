@@ -15,6 +15,9 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "Inventory & Order Management System"
     API_PREFIX: str = "/api"
 
+    # "development" | "production" — controls safety checks and docs exposure.
+    ENVIRONMENT: str = "development"
+
     # Database
     DATABASE_URL: str = (
         "postgresql+psycopg://ioms:ioms_password@localhost:5432/ioms"
@@ -43,6 +46,17 @@ class Settings(BaseSettings):
         if isinstance(v, str) and not v.startswith("["):
             return [i.strip() for i in v.split(",") if i.strip()]
         return v
+
+    @property
+    def is_production(self) -> bool:
+        return self.ENVIRONMENT.lower() == "production"
+
+    @property
+    def docs_enabled(self) -> bool:
+        # Hide interactive docs in production unless explicitly opted in.
+        return not self.is_production or self.ENABLE_DOCS
+
+    ENABLE_DOCS: bool = False
 
 
 @lru_cache
